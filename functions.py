@@ -221,57 +221,60 @@ def find_precipitation_types(tracks, precip_values, feature_id, frame, precip_th
 
 
 # Create a function for the conditional image processing
-def image_processing(cell, tracks, precip, mask, subset, feature, frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, s, precip_area):
+def image_processing(cell, tracks, precip, mask, subset, feature, subset_feature_frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, s, precip_area):
     """Conditional image processing statement"""
 
-    # If the mask shape is equal to the precip shape
-    if mask.shape == precip.shape:
-        # print("The mask shape is equal to the precip shape")
+    # Add in the for loop here
+    for frame in subset_feature_frame:
 
-        # Find the segmentation mask which occurs in the same frame
-        seg, prec = find_corresponding_frames(tracks, mask, precip, frame)
+        # If the mask shape is equal to the precip shape
+        if mask.shape == precip.shape:
+            # print("The mask shape is equal to the precip shape")
 
-        # Assign the feature id to the subset features at each frame
-        # of the cells lifetime
-        feature_id = assign_feature_id(subset, frame)
+            # Find the segmentation mask which occurs in the same frame
+            seg, prec = find_corresponding_frames(tracks, mask, precip, frame)
 
-        # Process the image using ndimage
-        # Generate a binary structure
-        labels, num_labels = image_processing_ndimage(seg, s)
+            # Assign the feature id to the subset features at each frame
+            # of the cells lifetime
+            feature_id = assign_feature_id(subset, frame)
 
-        # Check whether the feature_id is in the segmentation mask for that frame/timestep
-        if feature_id not in seg:
-            # Keep the loop running until matching feature_id is found
-            continue
-        else:
-            # A match has been found for the feature_id
-            # Select the segmentation mask area which 
-            # corresponds to the feature id
-            seg_mask = select_area(labels, feature_id, seg)
+            # Process the image using ndimage
+            # Generate a binary structure
+            labels, num_labels = image_processing_ndimage(seg, s)
 
-            # Create coordinates for the selected segmentation mask area
-            seg_mask = create_coordinates(seg_mask)
+            # Check whether the feature_id is in the segmentation mask for that frame/timestep
+            if feature_id not in seg:
+                # Keep the loop running until matching feature_id is found
+                continue
+            else:
+                # A match has been found for the feature_id
+                # Select the segmentation mask area which 
+                # corresponds to the feature id
+                seg_mask = select_area(labels, feature_id, seg)
 
-            # Find the precipitation values within the selected segmentation mask area
-            precip_values = find_precip_values(seg_mask, prec)
+                # Create coordinates for the selected segmentation mask area
+                seg_mask = create_coordinates(seg_mask)
 
-            # Find the total precip and rain features
-            tracks, rain_features = find_total_precip_and_rain_features(tracks, precip_values, feature_id, frame, precip_threshold, cell)
+                # Find the precipitation values within the selected segmentation mask area
+                precip_values = find_precip_values(seg_mask, prec)
 
-            # Find the precipitation types
-            # add them to the tracks dataframe
-            tracks = find_precipitation_types(tracks, precip_values, feature_id, frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, cell)
+                # Find the total precip and rain features
+                tracks, rain_features = find_total_precip_and_rain_features(tracks, precip_values, feature_id, frame, precip_threshold, cell)
 
-            # Checking whether the number of precipitating pixels
-            # exceeds the minimum area threshold for rain
-            # If it does, then the precipitation flag is set to increase
-            # the number of rain features
-            if rain_features >= precip_area:
-                # Set the flag to add rain pixels
-                precipitation_flag += rain_features
+                # Find the precipitation types
+                # add them to the tracks dataframe
+                tracks = find_precipitation_types(tracks, precip_values, feature_id, frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, cell)
 
-                # return the tracks dataframe and the precipitation flag
-                return tracks, precipitation_flag
+                # Checking whether the number of precipitating pixels
+                # exceeds the minimum area threshold for rain
+                # If it does, then the precipitation flag is set to increase
+                # the number of rain features
+                if rain_features >= precip_area:
+                    # Set the flag to add rain pixels
+                    precipitation_flag += rain_features
+
+                    # return the tracks dataframe and the precipitation flag
+                    return tracks, precipitation_flag
 
 
 # Create a function for the main filtering loop
@@ -298,12 +301,8 @@ def precip_filtering_loop(tracks, precip, mask, unique_cells, precip_threshold, 
             # Set up the frame of the feature within the subset
             subset_feature_frame = subset.frame[subset.feature == feature]
 
-            # Loop over the frames for each feature
-            # This identifies the frame which corresponds to each feature
-            for frame in subset_feature_frame:
-
-                # Do the image processing
-                tracks, precipitation_flag = image_processing(cell, tracks, precip, mask, subset, feature, frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, s, precip_area)
+            # Do the image processing for each subset feature frame
+            tracks, precipitation_flag = image_processing(cell, tracks, precip, mask, subset, feature, subset_feature_frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, s, precip_area)
 
         # If the precipitation flag is equal to zero
         # Then there is no precipitation within the cell
