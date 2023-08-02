@@ -12,6 +12,11 @@ precip_file = "/data/users/hgilmour/total_precip/precip_instant/precip_jan_2005.
 # Tracks file for Jan 2005
 tracks_file = "/data/users/hgilmour/tracking/code/tobac_sensitivity/Save/Track_precip_test.h5"
 
+# Filtered output for jan 2005
+tracks_filtered_output = "/data/users/hgilmour/tracking/code/tobac_sensitivity/Save/Track_precip_test_filtered_jan_2005.h5"
+
+tracks_cell_output_dir = "/data/users/hgilmour/tracking/code/tobac_sensitivity/Save"
+
 # Rainfall thresholds to use within filtering loop
 ## rainfall thresholds to use within filtering loop ##
 precip_threshold = 1 #mm/hr
@@ -22,4 +27,4 @@ precip_area = 25 # threshold for the minimum number of grid points that must be 
 
 ## other parameters that need to be defined before loop ##
 s = generate_binary_structure(2,2) # need this in loop later on
-removed = 0 # need this for loop later on
+removed_tracks = 0 # need this for loop later on
