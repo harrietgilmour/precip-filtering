@@ -4,7 +4,7 @@
 #
 # Usage: submit_all.unique_cells.bash <year>
 #
-# For example: bash submit_all.unique_cells.bash /data/users/hgilmour/tracking/code/tobac_sensitivity/Save/Track_precip_test.h5
+# For example: bash submit_all.unique_cells.bash 2005
 #
 
 # Check that the year has been provided
@@ -28,7 +28,8 @@ EXTRACTOR="/data/users/hgilmour/precip-filtering/submit.unique_cells.sh"
 # Find the unique cells for given year
 # base directory is the directory where the tracks are stored
 # in format tracks_yyyy_mm.h5
-base_dir = "/data/users/hgilmour/precip-filtering/Save/"
+
+base_dir="/data/users/hgilmour/tracking/code/tobac_sensitivity/Save"
 
 
 # Set up the output directory
@@ -42,12 +43,16 @@ for month in ${months[@]}; do
     echo $month
 
     # Find the tracks files for the given month
-    tracks_file = "tracks_" + year + "_" + month + ".h5"
+    tracks_file="tracks_${year}_${month}.h5"
     # construct the tracks path
-    tracks_path = base_dir + tracks_file
+    tracks_path=${base_dir}/${tracks_file}
+
+    # Set up the output files
+    OUTPUT_FILE="$OUTPUT_DIR/all_unique_cells.$year.$month.out"
+    ERROR_FILE="$OUTPUT_DIR/all_unique_cells.$year.$month.err"
 
     # submit the batch job
-    sbatch --mem=1000 --ntasks=4 --time=5 $EXTRACTOR $tracks_path
+    sbatch --mem=1000 --ntasks=4 --time=5 --output=$OUTPUT_FILE --error=$ERROR_FILE $EXTRACTOR $tracks_path
     
 done
 
