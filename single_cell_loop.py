@@ -311,8 +311,6 @@ def image_processing(cell, subset, precip, mask, subset_feature_frame, precip_th
                 # Select the segmentation mask area which 
                 # corresponds to the feature id
                 seg_mask = select_area(labels, feature_id, seg)
-                print(type(seg_mask))
-                print(np.shape(seg_mask))
 
                 # Create coordinates for the selected segmentation mask area
                 seg_mask = create_coordinates(seg_mask)
