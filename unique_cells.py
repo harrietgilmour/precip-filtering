@@ -90,6 +90,10 @@ def main():
     # create an array of unique cells witin the tracks dataframe
     unique_cells = find_unique_cells(tracks) 
 
+    # Print the unique cells array
+    print("The unique cells array is: ", unique_cells)
+
+    # Save the unique cells array in the unique_cell_files directory
     np.savetxt('/data/users/hgilmour/precip-filtering/unique_cell_files/unique_cell_TEST.txt', unique_cells)
     print('Saved unique cell array for file {}'.format(tracks_file))
 
