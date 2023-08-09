@@ -15,11 +15,17 @@ fi
 year=$1
 month=$2
 
+echo $year
+echo $month
+
 # load the txt file
 txt_file_path="/data/users/hgilmour/precip-filtering/unique_cell_files"
-txt_file_name = "unique_cells_${year}_${month}.txt"
+txt_file_name="unique_cells_${year}_${month}.txt"
+
 # form the file path
-txtfile= txt_file_path + txt_file_name
+txtfile=${txt_file_path}/${txt_file_name}
+
+echo $txtfile
 
 # Check that this file exists
 if [ ! -f $txtfile ]; then
@@ -28,7 +34,7 @@ if [ ! -f $txtfile ]; then
 fi
 
 # Set up the extractor script 
-EXTRACTOR="/data/users/hgilmour/precip-filtering/submit.single_cell_test.sh"
+EXTRACTOR="/data/users/hgilmour/precip-filtering/submit_single_cell_test.sh"
 
 # Set the output directory for the lOTUS OUTPUT
 # Set up the output directory
@@ -36,25 +42,25 @@ OUTPUT_DIR="/data/users/hgilmour/precip-filtering/lotus_output/single_cell_test"
 mkdir -p $OUTPUT_DIR
 
 # We want to extract the array of values from the txtfile
-unique_values_array = $(cat $txtfile)
+unique_values_array=$(cat $txtfile)
 
 # check that this array looks good
 echo "array of unique values: ${unique_values_array}"
 
 # set up the mask, precip and tracks file
-mask_dir="/data/users/hgilmour/tracking/tobac/code/tobac_sensitivity/Save"
+mask_dir="/data/users/hgilmour/tracking/code/tobac_sensitivity/Save"
 mask_file="mask_${year}_${month}.nc"
 
 precip_dir="/data/users/hgilmour/total_precip/precip_1h"
 precip_file="precip_${year}_${month}.nc"
 
-tracks_dir="/data/users/hgilmour/tracking/tobac/code/tobac_sensitivity/Save"
+tracks_dir="/data/users/hgilmour/tracking/code/tobac_sensitivity/Save"
 tracks_file="tracks_${year}_${month}.h5"
 
 # form the file paths
-mask=mask_dir + mask_file
-precip=precip_dir + precip_file
-tracks=tracks_dir + tracks_file
+mask=${mask_dir}/${mask_file}
+precip=${precip_dir}/${precip_file}
+tracks=${tracks_dir}/${tracks_file}
 
 # loop over the cells
 for cell in ${unique_values_array[@]}; do
