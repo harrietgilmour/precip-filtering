@@ -282,14 +282,9 @@ def find_precipitation_types(subset, precip_values, feature_id, frame, precip_th
 def image_processing(cell, subset, precip, mask, subset_feature_frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, s, precip_area, precipitation_flag):
     """Conditional image processing statement"""
 
-    #precipitation_flag = 0
-
     # Add in the for loop here
     for frame in subset_feature_frame:
         print('frame', frame)
-
-        #precipitation_flag = precipitation_flag
-        print("precip flag at start of loop:", precipitation_flag)
 
         # If the mask shape is equal to the precip shape
         if mask.shape == precip.shape:
@@ -338,10 +333,8 @@ def image_processing(cell, subset, precip, mask, subset_feature_frame, precip_th
                 # the number of rain features
 
                 if rain_features >= precip_area:
-                    precipitation_flag += rain_features
+                    precipitation_flag.append(rain_features)
 
-        print("penultimate precip flag value:", precipitation_flag)
-        # return the tracks dataframe and the precipitation flag
     return subset, precipitation_flag
 
 
@@ -383,7 +376,7 @@ def main():
     subset_features = subset.feature.values
 
     # Set the precipitation flag to 0
-    precipitation_flag = 0
+    precipitation_flag = []
 
     # Loop over the feature values within the subset
     # Which is set by the current cell
@@ -392,9 +385,10 @@ def main():
         subset_feature_frame = subset.frame[subset.feature == feature]
 
         # Do the image processing for each subset feature frame
-        subset, precipitation_flag = image_processing(cell, subset, precip, mask, subset_feature_frame, dic.precip_threshold, dic.heavy_precip_threshold, dic.extreme_precip_threshold, dic.s, dic.precip_area, dic.precipitation_flag)
+        subset, precipitation_flag = image_processing(cell, subset, precip, mask, subset_feature_frame, dic.precip_threshold, dic.heavy_precip_threshold, dic.extreme_precip_threshold, dic.s, dic.precip_area, precipitation_flag)
 
-    print("final precip flag value:", precipitation_flag)
+    # Take the sum of the array
+    precipitation_flag = np.sum(precipitation_flag)
 
     # If the precipitation flag is equal to zero
     # Then there is no precipitation within the cell
