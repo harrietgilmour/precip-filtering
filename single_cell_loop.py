@@ -63,23 +63,6 @@ def check_no_args(args):
         sys.exit(1)
 
 
-# #Find the files for the given month and year
-# def find_files(mask_file, precip_file, tracks_file):
-#     """Find the files for the given year and month"""
-
-#     #JUST TESTING THIS FOR JAN 2005
-#     mask_file = dic.mask_file
-#     precip_file = dic.precip_file
-#     tracks_file = dic.tracks_file
-
-#     #Check that the files exist
-#     if not os.path.exists(mask_file, precip_file, tracks_file):
-#         print("File does not exist")
-#         sys.exit(1)
-
-#         return mask_file, precip_file, tracks_file
-
-
 # Write a function which loads the files
 def open_datasets(mask_file, precip_file, tracks_file):
     """Load specified files"""
