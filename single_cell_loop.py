@@ -2,7 +2,7 @@
 #
 # <USAGE> python single_cell_loop.py <MASK_FILE> <PRECIP_FILE> <TRACKS_FILE> <CELL>
 #
-# <EXAMPLE> python single_cell_loop.py /data/users/hgilmour/tracking/code/tobac_sensitivity/Save/Mask_Segmentation_tb_precip_test.nc /data/users/hgilmour/total_precip/precip_instant/precip_jan_2005.nc /data/users/hgilmour/tracking/code/tobac_sensitivity/Save/Track_precip_test.h5 12
+# <EXAMPLE> python single_cell_loop.py /data/users/hgilmour/tracking/code/tobac_sensitivity/Save/mask_2005_01.nc /data/users/hgilmour/total_precip/precip_1h/precip_2005_01.nc /data/users/hgilmour/tracking/code/tobac_sensitivity/Save/tracks_2005_01.h5 12
 #
 
 
@@ -373,19 +373,21 @@ def main():
 
     # If the precipitation flag is equal to zero
     # Then there is no precipitation within the cell
-    if precipitation_flag == 0:
+    #if precipitation_flag == 0:
         # Remove the cell from the tracks dataframe
         #tracks = tracks.drop(tracks[tracks.cell == cell].index)
-        subset = subset.drop(subset[subset.cell == cell].index)
+        #subset = subset.drop(subset[subset.cell == cell].index)
 
         # Count the number of cells which have been removed
-        removed_tracks += 1
+        #removed_tracks += 1
 
     # Print the number of cells which have been removed
-    print("The number of cells which have been removed is: ", removed_tracks)
+    #print("The number of cells which have been removed is: ", removed_tracks)
 
-    subset.to_hdf('/data/users/hgilmour/precip-filtering/single_cell_hdf_files/jan_2005_precip_cell_{}'.format(cell), 'table')
-    print('Saved file for cell {}'.format(cell))
+    if precipitation_flag != 0:
+
+        subset.to_hdf('/data/users/hgilmour/precip-filtering/single_cell_hdf_files/jan_2005_precip_cell_{}.hdf'.format(cell), 'table')
+        print('Saved file for cell {}'.format(cell))
 
 #Run the main function
 if __name__ == "__main__":
