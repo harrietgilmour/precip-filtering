@@ -94,7 +94,7 @@ def main():
     print("The unique cells array is: ", unique_cells)
 
     # Save the unique cells array in the unique_cell_files directory
-    np.savetxt('/data/users/hgilmour/precip-filtering/unique_cell_files/unique_cell_TEST.txt', unique_cells)
+    np.savetxt('/data/users/hgilmour/precip-filtering/unique_cell_files/unique_cells_2005_01.txt', unique_cells, fmt="%s")
     print('Saved unique cell array for file {}'.format(tracks_file))
 
 
