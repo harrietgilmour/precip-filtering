@@ -28,3 +28,5 @@ precip_area = 25 # threshold for the minimum number of grid points that must be 
 ## other parameters that need to be defined before loop ##
 s = generate_binary_structure(2,2) # need this in loop later on
 removed_tracks = 0 # need this for loop later on
+
+precipitation_flag = 0

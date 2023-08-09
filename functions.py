@@ -48,7 +48,7 @@ def open_datasets(mask_file, precip_file, tracks_file):
     # Open the tracks file using pandas first
     tracks = pd.read_hdf(tracks_file, 'table')
     # Convert the pandas dataframe to a dask dataframe
-    tracks = dd.from_pandas(tracks, npartitions=100)
+    # tracks = dd.from_pandas(tracks, npartitions=100)
 
     return mask, precip, tracks
 
@@ -93,6 +93,9 @@ def find_unique_cells(tracks):
     # Print the shape of the unique cells array
     print("The shape of the unique cells array is: ", np.shape(unique_cells))
 
+    # Print the type of the unique cells array
+    print("The type of the unique cells array is: ", type(unique_cells))
+    
     # Print the unique cells array
     print("The unique cells array is: ", unique_cells)
 
@@ -224,8 +227,13 @@ def find_precipitation_types(tracks, precip_values, feature_id, frame, precip_th
 def image_processing(cell, tracks, precip, mask, subset, feature, subset_feature_frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, s, precip_area):
     """Conditional image processing statement"""
 
+    
+    
     # Add in the for loop here
     for frame in subset_feature_frame:
+        
+        print(np.shape(frame))
+        print(np.shape(subset_feature_frame))
 
         # If the mask shape is equal to the precip shape
         if mask.shape == precip.shape:
@@ -242,6 +250,10 @@ def image_processing(cell, tracks, precip, mask, subset, feature, subset_feature
             # Generate a binary structure
             labels, num_labels = image_processing_ndimage(seg, s)
 
+            
+            print("shape of feature id:", np.shape(feature_id))
+            print("shape of seg:", np.shape(seg))
+            
             # Check whether the feature_id is in the segmentation mask for that frame/timestep
             if feature_id not in seg:
                 # Keep the loop running until matching feature_id is found
@@ -342,13 +354,9 @@ def precip_filtering_loop_cell(cell, tracks, precip, mask, unique_cells, precip_
         # Set up the frame of the feature within the subset
         subset_feature_frame = subset.frame[subset.feature == feature]
 
-        # Loop over the frames for each feature
-        # This identifies the frame which corresponds to each feature
-        for frame in subset_feature_frame:
-
-            # Do the image processing
-            tracks, precipitation_flag = image_processing(cell, tracks, precip, mask, subset, feature, frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, s, precip_area)
-
+        # Do the image processing
+        tracks, precipitation_flag = image_processing(cell, tracks, precip, mask, subset, feature, subset_feature_frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, s, precip_area)
+        
     # If the precipitation flag is equal to zero
     # Then there is no precipitation within the cell
     if precipitation_flag == 0:
