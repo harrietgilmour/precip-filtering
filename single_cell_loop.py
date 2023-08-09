@@ -87,12 +87,10 @@ def open_datasets(mask_file, precip_file, tracks_file):
     #Load mask file
     mask = xr.open_dataset(mask_file)
     mask = mask.segmentation_mask
-    print(mask.shape)
 
     #Load precip file
     precip = xr.open_dataset(precip_file)
     precip = precip.stratiform_rainfall_flux
-    print(precip.shape)
 
     #Load tracks file
     tracks = pd.read_hdf(tracks_file, 'table')
@@ -221,16 +219,16 @@ def find_precip_values(seg_mask, prec):
     precip_values_array = precip_values.values.flatten() * 3600
 
     # Convert the precip values array into a dask array
-    precip_values_array = da.from_array(precip_values_array, chunks = 100)
+    #precip_values_array = da.from_array(precip_values_array, chunks = 100)
 
     # Remove any nan values from the array
-    precip_values = precip_values_array[~da.isnan(precip_values_array)]
+    precip_values = precip_values_array[~np.isnan(precip_values_array)]
 
     return precip_values
 
 # Create a function to find the total precip and rain features
 # and set them to the tracks dataframe
-def find_total_precip_and_rain_features(subset, precip_values, feature_id, frame, precip_threshold, cell):
+def find_total_precip_and_rain_features(subset, precip_values, feature_id, frame, precip_threshold):
 
     # Find the total precip for the feature
     # First, values of 0 are removed to only consider precipitating pixels. # Then np.nansum is used to compute the sum of all precipitating values # within the mask.
@@ -242,55 +240,56 @@ def find_total_precip_and_rain_features(subset, precip_values, feature_id, frame
 
     # Assign these to the tracks dataframe for the corresponding values
     # of cell frame and feature id
-    subset['total_precip'][(subset.feature == feature_id) & (subset.frame == frame) & (subset.cell == cell)] = total_precip
+    subset['total_precip'][(subset.feature == feature_id) & (subset.frame == frame)] = total_precip
 
     # And for the rain features
-    subset['rain_flag'][(subset.feature == feature_id) & (subset.frame == frame) & (subset.cell == cell)] = rain_features
+    subset['rain_flag'][(subset.feature == feature_id) & (subset.frame == frame)] = rain_features
 
     return subset, rain_features
 
 # Create a function to find the total rainfall and area
 # from convective, heavy and extreme
 # precipitation types
-def find_precipitation_types(subset, precip_values, feature_id, frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, cell):
+def find_precipitation_types(subset, precip_values, feature_id, frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold):
 
     # Set up the tracks dataframe columns for convective precip
     # heavy precip and extreme precip
-    subset['convective_precip'][(subset.feature == feature_id) & (subset.frame == frame) & (subset.cell == cell)] = np.nansum(precip_values[precip_values >= precip_threshold])
+    subset['convective_precip'][(subset.feature == feature_id) & (subset.frame == frame)] = np.nansum(precip_values[precip_values >= precip_threshold])
 
     # For heavy precip threshold
-    subset['heavy_precip'][(subset.feature == feature_id) & (subset.frame == frame) & (subset.cell == cell)] = np.nansum(precip_values[precip_values >= heavy_precip_threshold])
+    subset['heavy_precip'][(subset.feature == feature_id) & (subset.frame == frame)] = np.nansum(precip_values[precip_values >= heavy_precip_threshold])
 
     # Count the number of heavy precip pixels for the heavy rain flag
-    subset['heavy_rain_flag'][(subset.feature == feature_id) & (subset.frame == frame) & (subset.cell == cell)] = precip_values[precip_values >= heavy_precip_threshold].shape[0]
+    subset['heavy_rain_flag'][(subset.feature == feature_id) & (subset.frame == frame)] = precip_values[precip_values >= heavy_precip_threshold].shape[0]
 
     # For extreme precip threshold
-    subset['extreme_precip'][(subset.feature == feature_id) & (subset.frame == frame) & (subset.cell == cell)] = np.nansum(precip_values[precip_values >= extreme_precip_threshold])
+    subset['extreme_precip'][(subset.feature == feature_id) & (subset.frame == frame)] = np.nansum(precip_values[precip_values >= extreme_precip_threshold])
 
     # Count the number of extreme precip pixels for the extreme rain flag
-    subset['extreme_rain_flag'][(subset.feature == feature_id) & (subset.frame == frame) & (subset.cell == cell)] = precip_values[precip_values >= extreme_precip_threshold].shape[0]
+    subset['extreme_rain_flag'][(subset.feature == feature_id) & (subset.frame == frame)] = precip_values[precip_values >= extreme_precip_threshold].shape[0]
 
     # Max precip within the cell at that timestep
-    subset['max_precip'][(subset.feature == feature_id) & (subset.frame == frame) & (subset.cell == cell)] = np.max(precip_values)
+    subset['max_precip'][(subset.feature == feature_id) & (subset.frame == frame)] = np.max(precip_values)
 
     # Mean precip within the cell at that timestep
-    subset['mean_precip'][(subset.feature == feature_id) & (subset.frame == frame) & (subset.cell == cell)] = np.mean(precip_values)
+    subset['mean_precip'][(subset.feature == feature_id) & (subset.frame == frame)] = np.mean(precip_values)
 
     return subset
 
+
+
 # Create a function for the conditional image processing
-def image_processing(cell, subset, precip, mask, subset_feature_frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, s, precip_area):
+def image_processing(cell, subset, precip, mask, subset_feature_frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, s, precip_area, precipitation_flag):
     """Conditional image processing statement"""
 
-    print("mask shape before frame loop:", np.shape(mask))
+    #precipitation_flag = 0
 
     # Add in the for loop here
     for frame in subset_feature_frame:
         print('frame', frame)
-        print(type(frame))
 
-        print("shape of mask", np.shape(mask))
-        print("shape of precip", np.shape(precip))
+        #precipitation_flag = precipitation_flag
+        print("precip flag at start of loop:", precipitation_flag)
 
         # If the mask shape is equal to the precip shape
         if mask.shape == precip.shape:
@@ -306,16 +305,10 @@ def image_processing(cell, subset, precip, mask, subset_feature_frame, precip_th
             # Process the image using ndimage
             # Generate a binary structure
             labels, num_labels = image_processing_ndimage(seg, s)
-            print(num_labels)
-
-            print(type(seg))
-            print(np.shape(seg))
-            print(type(feature_id))
-            print("shape of feature id",np.shape(feature_id))
-            print("feature id", feature_id)
 
             # Check whether the feature_id is in the segmentation mask for that frame/timestep
             if int(feature_id) not in seg:
+                print("feature_id not in seg")
                 # Keep the loop running until matching feature_id is found
                 continue
             else:
@@ -333,22 +326,23 @@ def image_processing(cell, subset, precip, mask, subset_feature_frame, precip_th
                 precip_values = find_precip_values(seg_mask, prec)
 
                 # Find the total precip and rain features
-                subset, rain_features = find_total_precip_and_rain_features(subset, precip_values, feature_id, frame, precip_threshold, cell)
+                subset, rain_features = find_total_precip_and_rain_features(subset, precip_values, feature_id, frame, precip_threshold)
 
                 # Find the precipitation types
                 # add them to the tracks dataframe
-                subset = find_precipitation_types(subset, precip_values, feature_id, frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold, cell)
+                subset = find_precipitation_types(subset, precip_values, feature_id, frame, precip_threshold, heavy_precip_threshold, extreme_precip_threshold)
 
                 # Checking whether the number of precipitating pixels
                 # exceeds the minimum area threshold for rain
                 # If it does, then the precipitation flag is set to increase
                 # the number of rain features
+
                 if rain_features >= precip_area:
-                    # Set the flag to add rain pixels
                     precipitation_flag += rain_features
 
-                    # return the tracks dataframe and the precipitation flag
-                    return subset, precipitation_flag
+        print("penultimate precip flag value:", precipitation_flag)
+        # return the tracks dataframe and the precipitation flag
+    return subset, precipitation_flag
 
 
 #Define the main function / filerting loop:
@@ -382,8 +376,6 @@ def main():
     #remove non-tracked cells from the dataframe
     tracks = remove_non_track_cells(tracks)
 
-    print(cell)
-
     # Select a subset of the dataframe for the cell
     subset = select_subset(tracks, cell)
 
@@ -398,24 +390,11 @@ def main():
     for feature in subset_features:
         # Set up the frame of the feature within the subset
         subset_feature_frame = subset.frame[subset.feature == feature]
-        print(subset_feature_frame)
-
-        # print the types of everything which is being used by image processing
-        print(type(cell))
-        print(type(precip))
-        print(type(mask))
-        print("mask shape", np.shape(mask))
-        print(type(subset))
-        print(type(feature))
-        print(type(subset_feature_frame))
-        print(type(dic.precip_threshold))
-        print(type(dic.heavy_precip_threshold))
-        print(type(dic.extreme_precip_threshold))
-        print(type(dic.s))
-        print(type(dic.precip_area))
 
         # Do the image processing for each subset feature frame
-        subset, precipitation_flag = image_processing(cell, subset, precip, mask, subset_feature_frame, dic.precip_threshold, dic.heavy_precip_threshold, dic.extreme_precip_threshold, dic.s, dic.precip_area)
+        subset, precipitation_flag = image_processing(cell, subset, precip, mask, subset_feature_frame, dic.precip_threshold, dic.heavy_precip_threshold, dic.extreme_precip_threshold, dic.s, dic.precip_area, dic.precipitation_flag)
+
+    print("final precip flag value:", precipitation_flag)
 
     # If the precipitation flag is equal to zero
     # Then there is no precipitation within the cell
@@ -431,6 +410,7 @@ def main():
     print("The number of cells which have been removed is: ", removed_tracks)
 
     subset.to_hdf('/data/users/hgilmour/precip-filtering/single_cell_hdf_files/jan_2005_precip_cell_{}'.format(cell), 'table')
+    print('Saved file for cell {}'.format(cell))
 
 #Run the main function
 if __name__ == "__main__":
